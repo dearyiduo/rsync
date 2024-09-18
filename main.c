@@ -1266,6 +1266,7 @@ void start_server(int f_in, int f_out, int argc, char *argv[])
  * for rsyncd, remote-shell, and local connections. */
 int client_run(int f_in, int f_out, pid_t pid, int argc, char *argv[])
 {
+	printf("client_run\n");
 	struct file_list *flist = NULL;
 	int exit_code = 0, exit_code2 = 0;
 	char *local_name = NULL;

@@ -1,5 +1,7 @@
 WHAT IS RSYNC?
 --------------
+介绍了RSYNC如何工作:https://rsync.samba.org/how-rsync-works.html
+
 
 Rsync is a fast and extraordinarily versatile file copying tool for
 both remote and local files.
