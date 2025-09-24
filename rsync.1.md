@@ -513,6 +513,7 @@ has its own detailed description later in this manpage.
 --compress, -z           compress file data during the transfer
 --compress-choice=STR    choose the compression algorithm (aka --zc)
 --compress-level=NUM     explicitly set compression level (aka --zl)
+--compress-threads=NUM   explicitly set compression threads (aka --zt)
 --skip-compress=LIST     skip compressing files with suffix in LIST
 --cvs-exclude, -C        auto-ignore files in the same way CVS does
 --filter=RULE, -f        add a file-filtering RULE
@@ -2817,6 +2818,22 @@ expand it.
     report something like "`Client compress: zstd (level 3)`" (along with the
     checksum choice in effect).
 
+0.  `--compress-threads=NUM`, `--zt=NUM`
+
+    Set the number of threads to spawn when compressing data. Setting this 
+    option to 1 or more will instruct the compression library to spawn 1 or 
+    more threads for compression. Ideally, increasing the number of threads 
+    will increase transfer speed if the transfer is CPU bound on the sender.
+    
+    This option does not affect decompression. 
+
+    Compression algorithms that allow threading:
+
+    - `zstd` (only when libzstd is compiled with threading support)
+
+    This option is ignored if one of the above alogithms is not selected as the
+     `--compression-choice` or if compression not enabled.
+
 0.  `--skip-compress=LIST`
 
     **NOTE:** no compression method currently supports per-file compression
@@ -3995,7 +4012,7 @@ option (though the 2 commands behave differently if deletions are enabled):
 >     rsync -aiR x/y/file.txt host:/tmp/
 
 The following command does not need an include of the "x" directory because it
-is not a part of the transfer (note the traililng slash).  Running this command
+is not a part of the transfer (note the trailing slash).  Running this command
 would copy just "`/tmp/x/file.txt`" because the "y" and "z" dirs get excluded:
 
 >     rsync -ai -f'+ file.txt' -f'- *' x/ host:/tmp/x/

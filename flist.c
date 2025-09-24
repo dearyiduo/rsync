@@ -1390,7 +1390,7 @@ struct file_struct *make_file(const char *fname, struct file_list *flist,
 
 	if (copy_devices && am_sender && IS_DEVICE(st.st_mode)) {
 		if (st.st_size == 0) {
-			int fd = do_open(fname, O_RDONLY, 0);
+			int fd = do_open_checklinks(fname);
 			if (fd >= 0) {
 				st.st_size = get_device_size(fd, fname);
 				close(fd);
@@ -2584,6 +2584,19 @@ struct file_list *recv_file_list(int f, int dir_ndx)
 		init_hard_links();
 #endif
 
+	if (inc_recurse && dir_ndx >= 0) {
+		if (dir_ndx >= dir_flist->used) {
+			rprintf(FERROR_XFER, "rsync: refusing invalid dir_ndx %u >= %u\n", dir_ndx, dir_flist->used);
+			exit_cleanup(RERR_PROTOCOL);
+		}
+		struct file_struct *file = dir_flist->files[dir_ndx];
+		if (file->flags & FLAG_GOT_DIR_FLIST) {
+			rprintf(FERROR_XFER, "rsync: refusing malicious duplicate flist for dir %d\n", dir_ndx);
+			exit_cleanup(RERR_PROTOCOL);
+		}
+		file->flags |= FLAG_GOT_DIR_FLIST;
+	}
+
 	flist = flist_new(0, "recv_file_list");
 	flist_expand(flist, FLIST_START_LARGE);
 
@@ -3154,8 +3167,8 @@ static void output_flist(struct file_list *flist)
 		} else
 			*uidbuf = '\0';
 		if (gid_ndx) {
-			static char parens[] = "(\0)\0\0\0";
-			char *pp = parens + (file->flags & FLAG_SKIP_GROUP ? 0 : 3);
+			static const char parens[] = "(\0)\0\0\0";
+			const char *pp = parens + (file->flags & FLAG_SKIP_GROUP ? 0 : 3);
 			snprintf(gidbuf, sizeof gidbuf, " gid=%s%u%s",
 				 pp, F_GROUP(file), pp + 2);
 		} else

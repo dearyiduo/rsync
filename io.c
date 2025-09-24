@@ -55,6 +55,7 @@ extern int read_batch;
 extern int compat_flags;
 extern int protect_args;
 extern int checksum_seed;
+extern int xfer_sum_len;
 extern int daemon_connection;
 extern int protocol_version;
 extern int remove_source_files;
@@ -116,7 +117,7 @@ static int active_filecnt = 0;
 static OFF_T active_bytecnt = 0;
 static int first_message = 1;
 
-static char int_byte_extra[64] = {
+static const char int_byte_extra[64] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* (00 - 3F)/4 */
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* (40 - 7F)/4 */
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, /* (80 - BF)/4 */
@@ -1157,7 +1158,7 @@ void set_io_timeout(int secs)
 
 static void check_for_d_option_error(const char *msg)
 {
-	static char rsync263_opts[] = "BCDHIKLPRSTWabceghlnopqrtuvxz";
+	static const char rsync263_opts[] = "BCDHIKLPRSTWabceghlnopqrtuvxz";
 	char *colon;
 	int saw_d = 0;
 
@@ -1977,7 +1978,7 @@ void read_sum_head(int f, struct sum_struct *sum)
 		exit_cleanup(RERR_PROTOCOL);
 	}
 	sum->s2length = protocol_version < 27 ? csum_length : (int)read_int(f);
-	if (sum->s2length < 0 || sum->s2length > MAX_DIGEST_LEN) {
+	if (sum->s2length < 0 || sum->s2length > xfer_sum_len) {
 		rprintf(FERROR, "Invalid checksum length %d [%s]\n",
 			sum->s2length, who_am_i());
 		exit_cleanup(RERR_PROTOCOL);

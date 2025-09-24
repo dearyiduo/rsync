@@ -46,6 +46,7 @@ long_opts = {
   'compare-dest': 2,
   'compress-choice': 1,
   'compress-level': 1,
+  'compress-threads': 1,
   'copy-dest': 2,
   'copy-devices': -1,
   'copy-unsafe-links': 0,
@@ -156,6 +157,10 @@ def main():
     command = os.environ.get('SSH_ORIGINAL_COMMAND', None)
     if not command:
         die("Not invoked via sshd")
+    if command == 'true':
+        # Allow checking connectivity with "ssh <host> true".  (For example,
+        # rsbackup uses this.)
+        sys.exit(0)
     command = command.split(' ', 2)
     if command[0:1] != ['rsync']:
         die("SSH_ORIGINAL_COMMAND does not run rsync")
@@ -296,6 +301,7 @@ def validated_arg(opt, arg, typ=3, wild=False):
     if arg.startswith('./'):
         arg = arg[1:]
     arg = arg.replace('//', '/')
+    arg = arg.lstrip('/')
     if args.dir != '/':
         if HAS_DOT_DOT_RE.search(arg):
             die("do not use .. in", opt, "(anchor the path at the root of your restricted dir)")

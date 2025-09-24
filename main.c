@@ -66,7 +66,7 @@ extern int protect_args;
 extern int relative_paths;
 extern int sanitize_paths;
 extern int curr_dir_depth;
-extern int curr_dir_len;
+extern unsigned int curr_dir_len;
 extern int module_id;
 extern int rsync_port;
 extern int whole_file;
@@ -386,7 +386,7 @@ static void handle_stats(int f)
 
 static void output_itemized_counts(const char *prefix, int *counts)
 {
-	static char *labels[] = { "reg", "dir", "link", "dev", "special" };
+	static char *const labels[] = { "reg", "dir", "link", "dev", "special" };
 	char buf[1024], *pre = " (";
 	int j, len = 0;
 	int total = counts[0];
